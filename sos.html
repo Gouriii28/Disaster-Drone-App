@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f3a5f">
+  <title>SAADAXA — Emergency SOS</title>
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <style>
+    :root { --bg:#f3f4f6; --surface:#fff; --ink:#1a2330; --muted:#6a7482; --line:#dfe3e8; --primary:#1f3a5f;
+            --danger:#a63a32; --ok:#2e6b4a; --ok-soft:#e6f0ea; --warn-soft:#f6eedf;
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Arial,sans-serif; color:var(--ink); background:var(--bg); }
+    * { box-sizing:border-box; } body { margin:0; }
+    header { background:var(--primary); color:#fff; padding:14px 16px; border-bottom:3px solid #16304f; }
+    header b { letter-spacing:.22em; font-size:17px; } header div { font-size:12px; opacity:.85; margin-top:2px; }
+    main { max-width:520px; margin:0 auto; padding:16px; }
+    .card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; }
+    h1 { font-size:20px; margin:0 0 6px; } p { margin:0; line-height:1.45; } .muted { color:var(--muted); font-size:13px; }
+    label { display:block; margin:12px 0 0; font-size:14px; font-weight:600; }
+    input[type=number], input[type=tel], textarea { width:100%; margin-top:6px; padding:11px 12px; font:inherit; font-size:16px;
+      border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); }
+    .checks { display:flex; gap:10px; margin-top:12px; } .checks label { flex:1; margin:0; font-weight:500; display:flex; gap:8px; align-items:center;
+      border:1px solid var(--line); border-radius:8px; padding:11px; } .checks input { width:20px; height:20px; }
+    .sos { width:100%; height:84px; margin-top:16px; border:0; border-radius:10px; background:var(--danger); color:#fff; font-size:26px;
+      font-weight:800; letter-spacing:.25em; padding-left:.25em; } .sos:disabled { opacity:.5; }
+    .loc { margin-top:12px; font-size:13px; padding:9px 11px; border-radius:8px; background:var(--warn-soft); }
+    .loc.ok { background:var(--ok-soft); color:var(--ok); }
+    .status { font-size:18px; font-weight:700; margin:6px 0; } .status.ok { color:var(--ok); }
+    .thread { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .m { padding:10px 12px; border-radius:10px; max-width:92%; font-size:15px; line-height:1.4; }
+    .m.team { background:var(--primary); color:#fff; align-self:flex-start; }
+    .m.survivor { background:#fff; border:1px solid var(--line); align-self:flex-end; }
+    .m.system { background:#eceff3; font-size:13px; align-self:center; }
+    .m small { display:block; opacity:.75; font-size:11px; margin-top:4px; } .m audio { width:220px; max-width:100%; margin-top:6px; }
+    .row { display:flex; gap:8px; margin-top:12px; } .row textarea { margin:0; flex:1; }
+    .send { border:0; border-radius:8px; background:var(--primary); color:#fff; font-weight:700; padding:0 18px; font-size:15px; }
+    .tips li { margin:6px 0; font-size:14px; } .err { color:var(--danger); font-size:14px; margin-top:10px; }
+  </style>
+</head>
+<body>
+<header><b>SAADAXA</b><div>Emergency SOS · Disaster Response Network</div></header>
+<main>
+  <section class="card" id="form-card">
+    <h1>Need rescue?</h1>
+    <p class="muted">This sends your location to the rescue teams. Keep this page open after sending — they can reply here.</p>
+    <div class="loc" id="loc">Finding your location…</div>
+    <label>How many people are with you (including you)?
+      <input type="number" id="people" min="1" max="500" value="1"></label>
+    <div class="checks">
+      <label><input type="checkbox" id="injured"> Someone is injured</label>
+      <label><input type="checkbox" id="trapped"> Trapped</label>
+    </div>
+    <label>Short message (optional)
+      <textarea id="note" rows="2" maxlength="500" placeholder="e.g. Ground floor, roof collapsed, need water"></textarea></label>
+    <label>Phone number (optional)
+      <input type="tel" id="contact" maxlength="20" placeholder="So the team can call you"></label>
+    <button class="sos" id="send" disabled>SOS</button>
+    <p class="err" id="err" hidden></p>
+    <p class="muted" style="margin-top:12px">If you can make a call, also dial <b>112</b>.</p>
+  </section>
+
+  <section class="card" id="status-card" hidden>
+    <p class="muted">Your SOS <span id="sos-id"></span></p>
+    <div class="status" id="status">Sent — waiting for a rescue team</div>
+    <p class="muted" id="status-sub">Stay where you are if it is safe. Your location is updated every minute while this page is open.</p>
+    <div class="thread" id="thread"></div>
+    <div class="row">
+      <textarea id="reply" rows="2" maxlength="1000" placeholder="Message to the rescue team"></textarea>
+      <button class="send" id="reply-send">Send</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <b>While you wait</b>
+    <ul class="tips">
+      <li>Save phone battery: lower screen brightness, close other apps.</li>
+      <li>If trapped, tap on a pipe or wall 3 times at a time. Shout only as a last resort.</li>
+      <li>Cover nose and mouth with cloth against dust. Do not light matches.</li>
+      <li>If you hear a drone, it may carry a speaker and microphone — listen and answer.</li>
+    </ul>
+  </section>
+</main>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const KEY = "saadaxa.mysos";
+  let fix = null, mine = null, polling = null;
+  try { mine = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const STATUS = {
+    new: ["Sent — waiting for a rescue team", ""],
+    accepted: ["A rescue team has accepted your SOS", "ok"],
+    en_route: ["Rescue team is on the way", "ok"],
+    on_scene: ["Rescue team is in your area — make noise or show a light", "ok"],
+    rescued: ["Marked as rescued", "ok"],
+    closed: ["This SOS was closed by the rescue team", ""],
+  };
+
+  function showLoc() {
+    const el = $("#loc");
+    if (fix) { el.className = "loc ok"; el.textContent = `Location found (±${Math.round(fix.accuracy)} m)`; }
+    $("#send").disabled = !fix;
+  }
+  if (navigator.geolocation && window.isSecureContext) {
+    navigator.geolocation.watchPosition((p) => {
+      fix = { lat: p.coords.latitude, lon: p.coords.longitude, accuracy: p.coords.accuracy };
+      showLoc();
+    }, (e) => {
+      $("#loc").textContent = e.code === 1
+        ? "Location is blocked. Allow location for this page in your browser settings, then reload."
+        : "Still looking for your location… move near a window or outside if safe.";
+    }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 });
+  } else {
+    $("#loc").textContent = "Location needs the secure (https://) address of this page.";
+  }
+
+  async function post(url, body) {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!r.ok) { const e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
+    return r.json();
+  }
+
+  $("#send").addEventListener("click", async () => {
+    if (!fix) return;
+    $("#send").disabled = true;
+    $("#err").hidden = true;
+    const body = { lat: fix.lat, lon: fix.lon, accuracy: fix.accuracy,
+      people: Math.max(1, parseInt($("#people").value, 10) || 1),
+      injured: $("#injured").checked, trapped: $("#trapped").checked,
+      note: $("#note").value.trim(), contact: $("#contact").value.trim() };
+    try {
+      mine = await post("/api/public/sos", body);
+      localStorage.setItem(KEY, JSON.stringify(mine));
+      startStatus();
+    } catch (e) {
+      $("#err").textContent = e.status === 429 ? "Too many SOS calls from this connection. Wait a few minutes."
+        : "Could not reach the rescue server. Check that you are connected to the network, then try again. Call 112 if you can.";
+      $("#err").hidden = false;
+      $("#send").disabled = false;
+    }
+  });
+
+  function render(v) {
+    const s = STATUS[v.status] || STATUS.new;
+    $("#status").textContent = s[0] + (v.team && v.status !== "new" ? ` (${v.team})` : "");
+    $("#status").className = "status " + s[1];
+    $("#thread").innerHTML = v.messages.map((m) => `<div class="m ${m.sender}">
+        ${m.text ? esc(m.text) : ""}${m.audio_url ? `<audio controls preload="none" src="${esc(m.audio_url)}"></audio>` : ""}
+        <small>${m.sender === "team" ? esc(m.team) + " · " : m.sender === "survivor" ? "You · " : ""}${new Date(m.ts * 1000).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}</small></div>`).join("");
+  }
+
+  async function refresh(withLocation) {
+    try {
+      const v = withLocation && fix
+        ? await post(`/api/public/sos/${mine.id}/update`, { secret: mine.secret, lat: fix.lat, lon: fix.lon, accuracy: fix.accuracy })
+        : await (async () => {
+            const r = await fetch(`/api/public/sos/${mine.id}?secret=${encodeURIComponent(mine.secret)}`);
+            if (r.status === 404) { const e = new Error("gone"); e.status = 404; throw e; }
+            return r.json();
+          })();
+      if (v && v.messages) render(v);
+    } catch (e) {
+      if (e.status === 404) {          // server no longer knows this SOS: show the form again
+        localStorage.removeItem(KEY); mine = null; clearInterval(polling);
+        $("#status-card").hidden = true; $("#form-card").hidden = false; showLoc();
+      }
+    }
+  }
+
+  let tick = 0;
+  function startStatus() {
+    $("#form-card").hidden = true;
+    $("#status-card").hidden = false;
+    $("#sos-id").textContent = mine.id;
+    refresh(false);
+    clearInterval(polling);
+    polling = setInterval(() => { tick++; refresh(tick % 12 === 0); }, 5000);   // replies every 5 s, location every 60 s
+  }
+
+  $("#reply-send").addEventListener("click", async () => {
+    const text = $("#reply").value.trim();
+    if (!text || !mine) return;
+    try {
+      const v = await post(`/api/public/sos/${mine.id}/update`, { secret: mine.secret, text,
+        lat: fix ? fix.lat : null, lon: fix ? fix.lon : null, accuracy: fix ? fix.accuracy : null });
+      $("#reply").value = "";
+      render(v);
+    } catch (e) { alert("Message not sent — no connection. Try again."); }
+  });
+
+  if (mine && mine.id) startStatus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a5f">
+  <meta name="description" content="SAADAXA — rescue team app for disaster response">
+  <title>SAADAXA — Rescue Team</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<!-- ================= SVG icon set ================= -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Zm0 0v14m6-12v14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cases" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 3h6v3H9zM8 11h8M8 15h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-rec" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 10.5 5-3v9l-5-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.5M12 17.2v.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 8h12l-3-3M20 16H8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-7-7-1Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-uav" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="5" cy="5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5" cy="19" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="19" cy="19" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 7l3 3m4 0 3-3M7 17l3-3m4 0 3 3" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-signal" viewBox="0 0 24 24"><path d="M4 20v-3M9 20v-7M14 20V9M19 20V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-team" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.5c1.8.8 3 2.8 3 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<!-- ================= Sign-in ================= -->
+<section class="signin" id="signin" hidden>
+  <div class="signin-card">
+    <svg class="signin-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 3 6 8.5v10.2C6 28 12 34.4 20 37c8-2.6 14-9 14-18.3V8.5L20 3Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="20" cy="19" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M20 9.5v5M20 23.5v5M10.5 19h5M24.5 19h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <div class="brand-name dark">SAADAXA</div>
+    <p class="muted small center">Disaster Response &amp; Survivor Location Network</p>
+    <h1 class="signin-title">Rescue team sign-in</h1>
+    <form id="signin-form" autocomplete="on">
+      <label class="field"><span>Team name</span><input class="input" id="si-team" maxlength="40" required placeholder="e.g. Team 3"></label>
+      <label class="field"><span>Your name or call sign</span><input class="input" id="si-member" maxlength="40" required placeholder="e.g. Lead-1"></label>
+      <label class="field"><span>Access code</span><input class="input" id="si-code" type="password" maxlength="100" required placeholder="Given by the operation lead"></label>
+      <p class="form-error" id="si-error" hidden></p>
+      <button class="btn primary block" id="si-submit">Sign in</button>
+    </form>
+    <p class="muted small center signin-foot">Need help and not part of a rescue team? <a href="sos.html">Open the survivor SOS page</a>.</p>
+  </div>
+</section>
+
+<!-- ================= App bar ================= -->
+<header class="appbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M20 3 6 8.5v10.2C6 28 12 34.4 20 37c8-2.6 14-9 14-18.3V8.5L20 3Z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="20" cy="19" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      <path d="M20 9.5v5M20 23.5v5M10.5 19h5M24.5 19h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="brand-name">SAADAXA</div>
+      <div class="brand-sub" id="brand-sub">Rescue Team Console</div>
+    </div>
+  </div>
+  <div class="appbar-actions">
+    <span id="net-dot" class="net-dot" title="Server connection"></span>
+    <button class="icon-btn" id="btn-settings" aria-label="Settings"><svg><use href="#i-gear"/></svg></button>
+  </div>
+</header>
+<div id="sim-banner" class="sim-banner" hidden>Training simulation — aircraft and detections are synthetic</div>
+<div id="offline-banner" class="offline-banner" hidden>No connection to the ground server. Updates are saved on this phone and sent automatically.</div>
+<div id="denied-banner" class="denied-banner" hidden>
+  <span id="denied-text">GPS-denied mode</span>
+  <span class="denied-actions">
+    <button class="link-btn" id="denied-sensors" hidden>Turn on step tracking</button>
+    <button class="link-btn" id="denied-set">Set position on map</button>
+  </span>
+</div>
+
+<main id="views">
+  <!-- ================= OPERATIONS ================= -->
+  <section class="view active" id="view-home">
+    <div class="op-card">
+      <div class="op-head">
+        <div>
+          <div class="eyebrow">Current operation</div>
+          <h1 id="op-name">—</h1>
+          <div class="muted small" id="op-team"></div>
+        </div>
+        <span class="updated" id="op-updated">Connecting…</span>
+      </div>
+      <div class="chip-row">
+        <span class="status-chip" id="chip-loc"><svg><use href="#i-pin"/></svg><span>Finding position…</span></span>
+        <span class="status-chip" id="chip-net"><svg><use href="#i-signal"/></svg><span>Network —</span></span>
+        <span class="status-chip" id="chip-air"><svg><use href="#i-uav"/></svg><span>No aerial units</span></span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat crit"><div class="stat-num" id="st-new">0</div><div class="stat-label">New, unassigned</div></div>
+      <div class="stat"><div class="stat-num" id="st-open">0</div><div class="stat-label">Open cases</div></div>
+      <div class="stat warn"><div class="stat-num" id="st-critical">0</div><div class="stat-label">Critical</div></div>
+      <div class="stat ok"><div class="stat-num" id="st-rescued">0</div><div class="stat-label">Rescued</div></div>
+    </div>
+
+    <div class="actions">
+      <button class="action" data-go="cases"><svg><use href="#i-cases"/></svg>Cases</button>
+      <button class="action" data-go="map"><svg><use href="#i-map"/></svg>Map</button>
+      <button class="action" id="btn-hazard-home"><svg><use href="#i-warn"/></svg>Hazard</button>
+      <button class="action" id="btn-sos-link"><svg><use href="#i-link"/></svg>SOS link</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>My team's cases</h2><button class="link-btn" data-go="cases">All cases</button></div>
+      <div id="my-cases" class="list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>New cases waiting for a team</h2></div>
+      <div id="new-cases" class="list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Disaster alerts — India</h2><button class="link-btn" id="btn-alerts-map">Show on map</button></div>
+      <p class="muted small" id="alerts-note">Official alerts from NDMA SACHET, plus GDACS and USGS, for India only.</p>
+      <div id="alert-list" class="list compact"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Aerial units</h2><span class="muted small" id="drone-count"></span></div>
+      <div id="drone-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Operation log</h2></div>
+      <div id="event-list" class="list compact"></div>
+    </div>
+  </section>
+
+  <!-- ================= MAP ================= -->
+  <section class="view" id="view-map">
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div class="map-filters" id="map-filters">
+        <label><input type="checkbox" data-layer="cases" checked><span class="lg lg-surv"></span>Cases</label>
+        <label><input type="checkbox" data-layer="units" checked><span class="lg lg-unit"></span>Teams</label>
+        <label><input type="checkbox" data-layer="drones" checked><span class="lg lg-uav"></span>Aerial</label>
+        <label><input type="checkbox" data-layer="hazards" checked><span class="lg lg-hz"></span>Hazards</label>
+        <label><input type="checkbox" data-layer="alerts" checked><span class="lg lg-world"></span>India alerts</label>
+      </div>
+      <div class="map-fabs">
+        <button class="fab fab-text" id="map-india" aria-label="Show all of India">India</button>
+        <button class="fab" id="map-locate" aria-label="Go to my position"><svg><use href="#i-locate"/></svg></button>
+        <button class="fab" id="map-setpos" aria-label="Set my position on the map"><svg><use href="#i-pin"/></svg></button>
+        <button class="fab" id="map-hazard" aria-label="Report hazard at a point"><svg><use href="#i-warn"/></svg></button>
+      </div>
+      <div class="pick-hint" id="pick-hint" hidden><span id="pick-text">Tap the map</span> <button class="link-btn" id="pick-cancel">Cancel</button></div>
+    </div>
+  </section>
+
+  <!-- ================= CASES ================= -->
+  <section class="view" id="view-cases">
+    <div class="page-head">
+      <h1>Cases</h1>
+      <p class="muted small">Survivors found by aircraft (thermal + depth, merged within 3 m) and SOS calls from survivors. Accept a case to take it.</p>
+    </div>
+    <div class="segmented" id="case-filter">
+      <button class="on" data-f="new">New</button>
+      <button data-f="mine">My team</button>
+      <button data-f="active">Active</button>
+      <button data-f="rescued">Rescued</button>
+      <button data-f="all">All</button>
+    </div>
+    <div id="case-list" class="list cards"></div>
+  </section>
+
+  <!-- ================= RECORD ================= -->
+  <section class="view" id="view-record">
+    <div class="page-head">
+      <h1>Record</h1>
+      <p class="muted small">Field video and audio, stamped with time and position, kept on this phone and sent to the ground server.</p>
+    </div>
+    <div class="segmented" id="rec-mode">
+      <button class="on" data-m="video">Video</button>
+      <button data-m="audio">Audio</button>
+    </div>
+    <div class="rec-stage" id="rec-stage">
+      <video id="rec-video" playsinline muted></video>
+      <div class="audio-stage" id="audio-stage" hidden>
+        <svg class="audio-icon"><use href="#i-mic"/></svg>
+        <canvas id="level" width="300" height="60"></canvas>
+      </div>
+      <div class="rec-overlay">
+        <span class="rec-badge" id="rec-badge" hidden><i></i>REC <b id="rec-timer">00:00</b></span>
+        <span class="rec-stamp" id="rec-stamp"></span>
+      </div>
+      <div class="rec-start" id="rec-start">
+        <p id="rec-start-text">Camera and microphone are off.</p>
+        <button class="btn primary" id="rec-enable">Turn on camera</button>
+      </div>
+    </div>
+    <div class="rec-controls">
+      <button class="icon-btn round" id="rec-flip" aria-label="Switch camera"><svg><use href="#i-flip"/></svg></button>
+      <button class="rec-button" id="rec-button" aria-label="Start recording" disabled><span></span></button>
+      <button class="icon-btn round" id="rec-off" aria-label="Turn off camera"><svg><use href="#i-close"/></svg></button>
+    </div>
+    <input class="input" id="rec-note" maxlength="300" placeholder="Optional note (case number, what is shown)">
+    <div class="card">
+      <div class="card-head"><h2>Saved recordings</h2><button class="link-btn" id="rec-upload-all">Send all</button></div>
+      <div id="rec-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- ================= ASSISTANT ================= -->
+  <section class="view chat-view" id="view-assist">
+    <div class="chat-head">
+      <div><h1>Assistant</h1><span class="badge muted" id="chat-mode">Offline guidance</span></div>
+      <button class="link-btn" id="chat-clear">Clear</button>
+    </div>
+    <div id="chat-log" class="chat-log"></div>
+    <form class="chat-input" id="chat-form" autocomplete="off">
+      <button type="button" class="icon-btn" id="chat-voice" aria-label="Speak" hidden><svg><use href="#i-mic"/></svg></button>
+      <textarea id="chat-text" rows="1" maxlength="2000" placeholder="Ask about triage, procedures, or cases…"></textarea>
+      <button class="icon-btn primary" id="chat-send" aria-label="Send"><svg><use href="#i-send"/></svg></button>
+    </form>
+  </section>
+</main>
+
+<!-- ================= Tab bar ================= -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab on" data-go="home"><svg><use href="#i-home"/></svg><span>Operations</span></button>
+  <button class="tab" data-go="map"><svg><use href="#i-map"/></svg><span>Map</span></button>
+  <button class="tab" data-go="cases"><svg><use href="#i-cases"/></svg><span>Cases</span><i class="tab-count" id="tab-count" hidden></i></button>
+  <button class="tab" data-go="record"><svg><use href="#i-rec"/></svg><span>Record</span></button>
+  <button class="tab" data-go="assist"><svg><use href="#i-chat"/></svg><span>Assistant</span></button>
+</nav>
+
+<!-- ================= Sheets ================= -->
+<div id="scrim" class="scrim" hidden></div>
+
+<section class="sheet" id="sheet-settings" hidden aria-label="Settings">
+  <div class="sheet-head"><h2>Settings</h2><button class="icon-btn" data-close="sheet-settings" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="sheet-body">
+    <h3 class="section-label">Signed in</h3>
+    <div class="kv-grid" id="set-team"></div>
+    <button class="btn" id="set-logout">Sign out</button>
+
+    <h3 class="section-label">Position (automatic)</h3>
+    <div class="loc-status" id="set-loc-status"></div>
+    <div class="kv-grid" id="set-loc"></div>
+    <p class="muted small" style="margin-top:8px">The app checks GPS and network by itself. With GPS it uses satellites. Without GPS it uses Wi-Fi or mobile network positioning. With neither, it switches to GPS-denied mode: it keeps your last good position as an anchor and estimates movement from your steps and compass heading until GPS returns.</p>
+    <div class="setting">
+      <div><b>Share my position with other teams</b><p>Shows your team on the operation map.</p></div>
+      <label class="switch"><input type="checkbox" id="set-share"><span></span></label>
+    </div>
+
+    <h3 class="section-label">Connection</h3>
+    <div class="kv-grid" id="set-conn"></div>
+    <button class="btn" id="set-flush">Send saved updates now</button>
+
+    <h3 class="section-label">Survivor SOS page</h3>
+    <p class="small">Survivors open this address on any phone connected to the same network to send an SOS with their location. Their calls appear in Cases.</p>
+    <div class="hz-loc" id="set-sos-url"></div>
+    <button class="btn" id="set-sos-copy">Copy link</button>
+
+    <h3 class="section-label">About</h3>
+    <p class="small">SAADAXA is the field console of an autonomous aerial disaster assistance and location tracking system. Aerial units survey in parallel strips, detect survivors with thermal and depth cameras, and keep positions accurate without satellites by anchoring to the last valid fix. When wideband links fail, coordinates continue over long-range radio while video and voice pause.</p>
+    <p class="muted small" id="set-device"></p>
+    <button class="btn danger-outline" id="set-clear">Clear data on this phone</button>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-hazard" hidden aria-label="Report hazard">
+  <div class="sheet-head"><h2>Report hazard</h2><button class="icon-btn" data-close="sheet-hazard" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <form class="sheet-body" id="hazard-form">
+    <label class="field"><span>Type</span>
+      <select class="input" id="hz-kind">
+        <option>Collapsed structure</option><option>Unstable structure</option><option>Flood water</option>
+        <option>Fire</option><option>Gas leak</option><option>Landslide</option><option>Blocked road</option>
+        <option>Fallen power line</option><option>Chemical spill</option><option>Other</option>
+      </select>
+    </label>
+    <div class="field"><span>Severity</span>
+      <div class="segmented" id="hz-sev">
+        <button type="button" data-s="low">Low</button>
+        <button type="button" class="on" data-s="moderate">Moderate</button>
+        <button type="button" data-s="severe">Severe</button>
+      </div>
+    </div>
+    <label class="field"><span>Details</span><textarea class="input" id="hz-note" rows="3" maxlength="500" placeholder="What you see, access routes, risks to teams"></textarea></label>
+    <div class="field"><span>Location</span><div class="hz-loc" id="hz-loc">—</div>
+      <button type="button" class="link-btn" id="hz-pick">Choose on map instead</button></div>
+    <button class="btn primary block" id="hz-submit">Send report</button>
+  </form>
+</section>
+
+<section class="sheet tall" id="sheet-case" hidden aria-label="Case">
+  <div class="sheet-head"><h2 id="cs-title">Case</h2><button class="icon-btn" data-close="sheet-case" aria-label="Close"><svg><use href="#i-close"/></svg></button></div>
+  <div class="sheet-body" id="cs-body">
+    <div id="cs-details"></div>
+    <div class="case-actions" id="cs-actions"></div>
+    <h3 class="section-label">Contact with survivor</h3>
+    <p class="muted small" id="cs-channel"></p>
+    <div class="thread" id="cs-thread"></div>
+    <form class="chat-input" id="cs-form" autocomplete="off">
+      <button type="button" class="icon-btn" id="cs-voice" aria-label="Hold to record voice message"><svg><use href="#i-mic"/></svg></button>
+      <textarea id="cs-text" rows="1" maxlength="1000" placeholder="Message to survivor…"></textarea>
+      <button class="icon-btn primary" id="cs-send" aria-label="Send"><svg><use href="#i-send"/></svg></button>
+    </form>
+    <p class="muted small center" id="cs-voice-hint">Hold the microphone to record a voice message.</p>
+  </div>
+</section>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
